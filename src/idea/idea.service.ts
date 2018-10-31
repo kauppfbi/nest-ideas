@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 import { IdeaEntity } from './idea.entity';
@@ -17,7 +17,15 @@ export class IdeaService {
   }
 
   public async readOne(id: string) {
-    return await this.ideaRepository.findOne({ where: { id } });
+    let idea;
+    try {
+      idea = await this.ideaRepository.findOne({ where: { id } });
+    } catch (error) {
+      Logger.error(`${error.code}: ${error.message}`, undefined, 'IdeaService');
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+
+    return idea;
   }
 
   public async createOne(data: IdeaDTO) {
@@ -28,12 +36,22 @@ export class IdeaService {
   }
 
   public async updateOne(id: string, data: Partial<IdeaDTO>) {
-    await this.ideaRepository.update({ id }, data);
-    return await this.ideaRepository.findOne({ id });
+    try {
+      await this.ideaRepository.update({ id }, data);
+      return await this.ideaRepository.findOne({ where: { id } });
+    } catch (error) {
+      Logger.error(`${error.code}: ${error.message}`, undefined, 'IdeaService');
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
   }
 
   public async destroyOne(id: string) {
-    await this.ideaRepository.delete({ id });
-    return { deleted: true };
+    try {
+      await this.ideaRepository.delete({ id });
+      return { deleted: true };
+    } catch (error) {
+      Logger.error(`${error.code}: ${error.message}`, undefined, 'IdeaService');
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
   }
 }
