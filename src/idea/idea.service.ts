@@ -70,7 +70,7 @@ export class IdeaService {
     try {
       const idea = await this.ideaRepository.findOne({
         where: { id },
-        relations: ['author'],
+        relations: ['author', 'upvotes', 'downvotes'],
       });
       this.ensureOwnership(idea, userId);
 
