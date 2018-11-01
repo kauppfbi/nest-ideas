@@ -30,13 +30,13 @@ export class IdeaController {
 
   @Get()
   public readAllIdeas() {
-    return this.ideaService.readAll();
+    return this.ideaService.showAll();
   }
 
   @Get(':id')
   public readIdea(@Param('id') id: string) {
     this.logData({ id });
-    return this.ideaService.readOne(id);
+    return this.ideaService.read(id);
   }
 
   @Post()
@@ -44,7 +44,7 @@ export class IdeaController {
   @UsePipes(new ValidationPipe())
   public createIdea(@User('id') user, @Body() body: IdeaDTO) {
     this.logData({ user, body });
-    return this.ideaService.createOne(body);
+    return this.ideaService.create(user, body);
   }
 
   @Put(':id')
@@ -56,13 +56,41 @@ export class IdeaController {
     @Body() body: Partial<IdeaDTO>,
   ) {
     this.logData({ id, user, body });
-    return this.ideaService.updateOne(id, user, body);
+    return this.ideaService.update(id, user, body);
   }
 
   @Delete(':id')
   @UseGuards(new AuthGuard())
   public deleteIdea(@Param('id') id: string, @User('id') user) {
     this.logData({ id, user });
-    return this.ideaService.destroyOne(id, user);
+    return this.ideaService.destroy(id, user);
+  }
+
+  @Post(':id/upvote')
+  @UseGuards(new AuthGuard())
+  upvoteIdea(@Param('id') id: string, @User('id') user: string) {
+    this.logData({ id, user });
+    return this.ideaService.upvote(id, user);
+  }
+
+  @Post(':id/downvote')
+  @UseGuards(new AuthGuard())
+  downvoteIdea(@Param('id') id: string, @User('id') user: string) {
+    this.logData({ id, user });
+    return this.ideaService.downvote(id, user);
+  }
+
+  @Post(':id/bookmark')
+  @UseGuards(new AuthGuard())
+  bookmarkIdea(@Param('id') id: string, @User('id') user: string) {
+    this.logData({ id, user });
+    return this.ideaService.bookmark(id, user);
+  }
+
+  @Delete(':id/bookmark')
+  @UseGuards(new AuthGuard())
+  unbookmarkIdea(@Param('id') id: string, @User('id') user: string) {
+    this.logData({ id, user });
+    return this.ideaService.unbookmark(id, user);
   }
 }
