@@ -12,6 +12,7 @@ import {
   UsePipes,
   Logger,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from 'shared/auth.guard';
 import { User } from 'user/user.decorator';
@@ -29,8 +30,13 @@ export class IdeaController {
   }
 
   @Get()
-  public readAllIdeas() {
-    return this.ideaService.showAll();
+  public readAllIdeas(
+    @Query('page') page: number,
+    @Query('size') size: number,
+    @Query('sortby') sortBy: string,
+    @Query('orderby') orderBy: string,
+  ) {
+    return this.ideaService.showAll(page, size, sortBy, orderBy);
   }
 
   @Get(':id')

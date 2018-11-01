@@ -7,6 +7,7 @@ import { IdeaEntity } from './idea.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IdeaDTO, IdeaRO } from './idea.dto';
 import { UserEntity } from 'user/user.entity';
+import { Order } from 'shared/order.enum';
 
 @Injectable()
 export class IdeaService {
@@ -32,11 +33,52 @@ export class IdeaService {
     }
   }
 
-  public async showAll(): Promise<IdeaRO[]> {
+  private toMetaData(
+    page: number,
+    size: number,
+    total: number,
+    sortBy: string,
+    orderBy: string,
+  ) {
+    return {
+      page: page ? page : 1,
+      size: size ? size : total,
+      total,
+      sortBy: sortBy ? sortBy : 'created',
+      orderBy: orderBy ? orderBy : Order.ASC,
+    };
+  }
+
+  private prepareOrder(sortBy: string, orderBy: string = Order.DESC) {
+    if (!IdeaEntity.prototype.hasOwnProperty(sortBy)) {
+      sortBy = 'created';
+    }
+
+    const order = {};
+    order[sortBy] = orderBy;
+    return order;
+  }
+
+  public async showAll(
+    page?: number,
+    size?: number,
+    sortBy?: string,
+    orderBy?: string,
+  ): Promise<any> {
+    const total = await this.ideaRepository.count();
+    const order = this.prepareOrder(sortBy, orderBy);
+
     const ideas = await this.ideaRepository.find({
       relations: ['author', 'upvotes', 'downvotes'],
+      take: size,
+      skip: (page - 1) * size,
+      order,
     });
-    return ideas.map(idea => this.ideaToResponseObject(idea));
+
+    return {
+      data: ideas.map(idea => this.ideaToResponseObject(idea)),
+      metaData: this.toMetaData(page, size, total, Object.keys(order)[0], orderBy),
+    };
   }
 
   public async read(id: string) {
